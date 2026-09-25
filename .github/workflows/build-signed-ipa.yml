@@ -1,0 +1,190 @@
+name: Build signed IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: signed-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build signed iPhone app
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      P12_BASE64: ${{ secrets.IOS_P12_BASE64 }}
+      P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+      PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+      TEMP_KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Extract Xcode project
+        run: |
+          set -euo pipefail
+          test -f QuitSmoke.zip
+          mkdir -p "$RUNNER_TEMP/source"
+          unzip -q QuitSmoke.zip -d "$RUNNER_TEMP/source"
+          test -d "$RUNNER_TEMP/source/QuitSmoke/QuitSmoke.xcodeproj"
+          echo "PROJECT_DIR=$RUNNER_TEMP/source/QuitSmoke" >> "$GITHUB_ENV"
+
+      - name: Validate signing secrets
+        run: |
+          set -euo pipefail
+          for value in P12_BASE64 P12_PASSWORD PROFILE_BASE64 TEMP_KEYCHAIN_PASSWORD; do
+            if [[ -z "${!value:-}" ]]; then
+              echo "Missing required GitHub secret: $value"
+              exit 1
+            fi
+          done
+
+      - name: Install certificate and provisioning profile
+        id: signing
+        run: |
+          set -euo pipefail
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/signing-certificate.p12"
+          PROFILE_PATH="$RUNNER_TEMP/signing-profile.mobileprovision"
+          PROFILE_PLIST="$RUNNER_TEMP/signing-profile.plist"
+          KEYCHAIN_PATH="$RUNNER_TEMP/quit-smoke-signing.keychain-db"
+
+          printf '%s' "$P12_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+          printf '%s' "$PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+          security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST"
+
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_PLIST")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_PLIST")
+          TEAM_ID=$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$PROFILE_PLIST")
+          APP_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$PROFILE_PLIST")
+          BUNDLE_ID="${APP_IDENTIFIER#${TEAM_ID}.}"
+          GET_TASK_ALLOW=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:get-task-allow' "$PROFILE_PLIST" 2>/dev/null || echo false)
+
+          if [[ "$BUNDLE_ID" == "*" || "$BUNDLE_ID" == *'*'* ]]; then
+            echo "The provisioning profile uses a wildcard App ID. Use an explicit profile for this app."
+            exit 1
+          fi
+
+          if [[ "$GET_TASK_ALLOW" == "true" ]]; then
+            EXPORT_METHOD="development"
+            SIGNING_IDENTITY="Apple Development"
+          elif /usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices:0' "$PROFILE_PLIST" >/dev/null 2>&1; then
+            EXPORT_METHOD="ad-hoc"
+            SIGNING_IDENTITY="Apple Distribution"
+          else
+            echo "The profile is not a Development or Ad Hoc profile for registered devices."
+            exit 1
+          fi
+
+          security create-keychain -p "$TEMP_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$TEMP_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" \
+            -P "$P12_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -k "$TEMP_KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          INSTALLED_PROFILE="$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          cp "$PROFILE_PATH" "$INSTALLED_PROFILE"
+
+          {
+            echo "profile_uuid=$PROFILE_UUID"
+            echo "profile_name=$PROFILE_NAME"
+            echo "team_id=$TEAM_ID"
+            echo "bundle_id=$BUNDLE_ID"
+            echo "export_method=$EXPORT_METHOD"
+            echo "signing_identity=$SIGNING_IDENTITY"
+            echo "keychain_path=$KEYCHAIN_PATH"
+            echo "installed_profile=$INSTALLED_PROFILE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Archive iPhone app
+        run: |
+          set -euo pipefail
+          cd "$PROJECT_DIR"
+          xcodebuild \
+            -project QuitSmoke.xcodeproj \
+            -scheme QuitSmoke \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/QuitSmoke.xcarchive" \
+            PRODUCT_BUNDLE_IDENTIFIER='${{ steps.signing.outputs.bundle_id }}' \
+            DEVELOPMENT_TEAM='${{ steps.signing.outputs.team_id }}' \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY='${{ steps.signing.outputs.signing_identity }}' \
+            PROVISIONING_PROFILE_SPECIFIER='${{ steps.signing.outputs.profile_name }}' \
+            clean archive
+
+      - name: Create export options
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>destination</key>
+              <string>export</string>
+              <key>method</key>
+              <string>${{ steps.signing.outputs.export_method }}</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>teamID</key>
+              <string>${{ steps.signing.outputs.team_id }}</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>${{ steps.signing.outputs.bundle_id }}</key>
+                  <string>${{ steps.signing.outputs.profile_name }}</string>
+              </dict>
+              <key>stripSwiftSymbols</key>
+              <true/>
+          </dict>
+          </plist>
+          PLIST
+          plutil -lint "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Export signed IPA
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ipa-output"
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$RUNNER_TEMP/QuitSmoke.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/ipa-output"
+          test -n "$(find "$RUNNER_TEMP/ipa-output" -maxdepth 1 -name '*.ipa' -print -quit)"
+
+      - name: Upload signed IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuitSmoke-signed-ipa
+          path: ${{ runner.temp }}/ipa-output/*.ipa
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Remove temporary signing files
+        if: always()
+        run: |
+          if [[ -n '${{ steps.signing.outputs.installed_profile }}' ]]; then
+            rm -f '${{ steps.signing.outputs.installed_profile }}'
+          fi
+          if [[ -n '${{ steps.signing.outputs.keychain_path }}' ]]; then
+            security delete-keychain '${{ steps.signing.outputs.keychain_path }}' 2>/dev/null || true
+          fi
