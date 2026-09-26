@@ -11,12 +11,15 @@ struct CardModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(16)
-            .background(.background, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: .black.opacity(0.055), radius: 12, y: 4)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(Color.primary.opacity(0.07), lineWidth: 0.75)
+            }
+            .shadow(color: .black.opacity(0.06), radius: 16, y: 6)
     }
 }
 
 extension View {
     func appCard() -> some View { modifier(CardModifier()) }
 }
-

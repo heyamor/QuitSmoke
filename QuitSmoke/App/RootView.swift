@@ -17,6 +17,8 @@ struct RootView: View {
             NavigationStack { SettingsView() }
                 .tabItem { Label("设置", systemImage: "gearshape.fill") }
         }
+        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .fullScreenCover(isPresented: Binding(
             get: { !store.data.hasCompletedSetup },
             set: { _ in }
@@ -27,4 +29,3 @@ struct RootView: View {
         }
     }
 }
-

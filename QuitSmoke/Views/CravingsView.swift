@@ -55,8 +55,21 @@ private struct CravingRow: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(craving.trigger).font(.headline)
-                Text(AppFormatters.dateTime.string(from: craving.date))
-                    .font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Text(AppFormatters.dateTime.string(from: craving.date))
+                    if !craving.emotion.isEmpty {
+                        Text("·")
+                        Text(craving.emotion)
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                if !craving.note.isEmpty {
+                    Text(craving.note)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
             Spacer()
             Label(craving.resisted ? "扛过" : "没扛过", systemImage: craving.resisted ? "checkmark.circle.fill" : "arrow.uturn.backward.circle")
@@ -71,4 +84,3 @@ private struct CravingRow: View {
         craving.intensity >= 4 ? .red : (craving.intensity >= 3 ? .orange : Theme.primary)
     }
 }
-

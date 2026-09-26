@@ -7,6 +7,7 @@ struct OnboardingView: View {
     @State private var cigarettesPerDay = 10
     @State private var cigarettesPerPack = 20
     @State private var pricePerPack = 30.0
+    @State private var smokingYears = 0
 
     var body: some View {
         NavigationStack {
@@ -43,6 +44,9 @@ struct OnboardingView: View {
                             Text("元").foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 12)
+                        Divider()
+                        Stepper("烟龄约 (smokingYears) 年", value: $smokingYears, in: 0...80)
+                            .padding(.vertical, 12)
                     }
                     .appCard()
 
@@ -51,7 +55,8 @@ struct OnboardingView: View {
                             startDate: startDate,
                             cigarettesPerDay: cigarettesPerDay,
                             cigarettesPerPack: cigarettesPerPack,
-                            pricePerPack: pricePerPack
+                            pricePerPack: pricePerPack,
+                            smokingYears: smokingYears
                         )
                     } label: {
                         Text("开始记录")
@@ -64,7 +69,17 @@ struct OnboardingView: View {
                 }
                 .padding(24)
             }
-            .background(Theme.softGreen.opacity(0.55))
+            .background {
+                ZStack {
+                    Color(uiColor: .systemGroupedBackground)
+                    LinearGradient(
+                        colors: [Theme.softGreen.opacity(0.85), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
+                .ignoresSafeArea()
+            }
             .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("完成") { hideKeyboard() } } }
         }
     }

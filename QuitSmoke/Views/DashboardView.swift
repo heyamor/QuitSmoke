@@ -14,12 +14,14 @@ struct DashboardView: View {
             VStack(spacing: 18) {
                 heroCard
                 metricGrid
+                recoveryCard
                 checkInCard
                 encouragementCard
             }
             .padding()
         }
         .background(Color(uiColor: .systemGroupedBackground))
+        .scrollIndicators(.hidden)
         .navigationTitle("无烟日记")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -57,6 +59,19 @@ struct DashboardView: View {
             LinearGradient(colors: [Theme.primary, Theme.secondary], startPoint: .topLeading, endPoint: .bottomTrailing),
             in: RoundedRectangle(cornerRadius: 26, style: .continuous)
         )
+        .overlay {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(.ultraThinMaterial.opacity(0.12))
+                .allowsHitTesting(false)
+        }
+        .overlay(alignment: .topTrailing) {
+            Circle()
+                .fill(.white.opacity(0.16))
+                .frame(width: 140, height: 140)
+                .blur(radius: 10)
+                .offset(x: 34, y: -58)
+                .allowsHitTesting(false)
+        }
         .shadow(color: Theme.primary.opacity(0.22), radius: 18, y: 8)
     }
 
@@ -66,7 +81,47 @@ struct DashboardView: View {
             MetricCard(icon: "yensign.circle.fill", value: AppFormatters.currency(store.metrics.moneySaved), label: "累计省下")
             MetricCard(icon: "flame.fill", value: "\(store.metrics.smokeFreeStreak) 天", label: "连续无烟")
             MetricCard(icon: "checkmark.seal.fill", value: "\(store.metrics.resistedRate)%", label: "烟瘾扛过率")
+            MetricCard(icon: "trophy.fill", value: AppFormatters.duration(store.metrics.longestElapsed), label: "最长纪录")
         }
+    }
+
+    private var recoveryCard: some View {
+        let next = RecoveryMilestone.all.first { $0.progress(elapsed: store.metrics.elapsed) < 1 }
+            ?? RecoveryMilestone.all.last!
+        let progress = next.progress(elapsed: store.metrics.elapsed)
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("恢复里程碑").font(.headline)
+                    Text(next.subtitle).font(.subheadline).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "heart.text.square.fill")
+                    .font(.title2)
+                    .foregroundStyle(Theme.primary)
+            }
+            HStack(spacing: 12) {
+                ProgressView(value: progress)
+                    .tint(Theme.primary)
+                Text("\(Int(progress * 100))%")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.primary)
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(RecoveryMilestone.all) { milestone in
+                        let completed = milestone.progress(elapsed: store.metrics.elapsed) >= 1
+                        Label(milestone.title, systemImage: completed ? "checkmark.circle.fill" : "circle")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(completed ? Theme.primary : .secondary)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 8)
+                            .background(.thinMaterial, in: Capsule())
+                    }
+                }
+            }
+        }
+        .appCard()
     }
 
     private var checkInCard: some View {
@@ -126,4 +181,3 @@ private struct MetricCard: View {
         .appCard()
     }
 }
-
