@@ -1,6 +1,17 @@
 # 无烟日记（QuitSmoke）
 
-个人自用的原生 iPhone 戒烟记录 App。使用 SwiftUI 编写，数据只保存在本机，不需要账号、网络或服务器。
+一个简洁、私密、个人自用的原生 iPhone 戒烟记录 App。它帮助你记录戒烟目标、无烟进度、烟瘾与复吸情况，并通过花费统计、健康里程碑和趋势回顾提供持续动力。使用 SwiftUI 编写，数据只保存在本机，不需要账号、网络或服务器。
+
+> 适合希望把戒烟过程当作个人记录管理的人：没有社交功能，不上传个人数据，也不依赖云端服务。
+
+## 当前版本
+
+- Version 1.2（Build 3）
+- [下载未签名 IPA](https://github.com/heyamor/QuitSmoke/raw/refs/heads/main/Releases/QuitSmoke-unsigned-v1.2.ipa)
+
+IPA 未包含签名和描述文件，安装前需要使用自己的证书重新签名。文件 SHA-256：
+
+`7f3796a87ca5256489874dec1a2e1d07a4919546585a7db5d98bd03fa5a2b309`
 
 ## 功能
 
