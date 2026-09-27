@@ -9,9 +9,7 @@
 - Version 1.2（Build 3）
 - [下载未签名 IPA](https://github.com/heyamor/QuitSmoke/raw/refs/heads/main/Releases/QuitSmoke-unsigned-v1.2.ipa)
 
-IPA 未包含签名和描述文件，安装前需要使用自己的证书重新签名。文件 SHA-256：
-
-`7f3796a87ca5256489874dec1a2e1d07a4919546585a7db5d98bd03fa5a2b309`
+IPA 未包含签名和描述文件，安装前需要使用自己的证书重新签名。
 
 ## 功能
 
