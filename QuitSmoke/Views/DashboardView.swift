@@ -80,20 +80,18 @@ struct DashboardView: View {
             MetricCard(icon: "minus.circle.fill", value: "\(store.metrics.fewerCigarettes) 支", label: "累计少抽")
             MetricCard(icon: "yensign.circle.fill", value: AppFormatters.currency(store.metrics.moneySaved), label: "累计省下")
             MetricCard(icon: "flame.fill", value: "\(store.metrics.smokeFreeStreak) 天", label: "连续无烟")
-            MetricCard(icon: "checkmark.seal.fill", value: "\(store.metrics.resistedRate)%", label: "烟瘾扛过率")
+            MetricCard(icon: "heart.text.square.fill", value: "\(store.metrics.recoveryPercent)%", label: "健康恢复度")
             MetricCard(icon: "trophy.fill", value: AppFormatters.duration(store.metrics.longestElapsed), label: "最长纪录")
         }
     }
 
     private var recoveryCard: some View {
-        let next = RecoveryMilestone.all.first { $0.progress(elapsed: store.metrics.elapsed) < 1 }
-            ?? RecoveryMilestone.all.last!
-        let progress = next.progress(elapsed: store.metrics.elapsed)
+        let metrics = store.metrics
         return VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("恢复里程碑").font(.headline)
-                    Text(next.subtitle).font(.subheadline).foregroundStyle(.secondary)
+                    Text("健康恢复度").font(.headline)
+                    Text("基于连续无烟时间的激励指数").font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Image(systemName: "heart.text.square.fill")
@@ -101,22 +99,27 @@ struct DashboardView: View {
                     .foregroundStyle(Theme.primary)
             }
             HStack(spacing: 12) {
-                ProgressView(value: progress)
+                ProgressView(value: metrics.recoveryProgress)
                     .tint(Theme.primary)
-                Text("\(Int(progress * 100))%")
+                Text("\(metrics.recoveryPercent)%")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Theme.primary)
             }
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(RecoveryMilestone.all) { milestone in
-                        let completed = milestone.progress(elapsed: store.metrics.elapsed) >= 1
-                        Label(milestone.title, systemImage: completed ? "checkmark.circle.fill" : "circle")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(completed ? Theme.primary : .secondary)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 8)
-                            .background(.thinMaterial, in: Capsule())
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "flag.checkered")
+                    .foregroundStyle(Theme.primary)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("当前阶段：\(metrics.currentRecoveryStage.title)")
+                        .font(.subheadline.weight(.semibold))
+                    if let next = metrics.nextRecoveryStage {
+                        let remaining = max(0, next.hours * 3_600 - metrics.elapsed)
+                        Text("下一里程碑：\(next.title)，还需约 \(AppFormatters.duration(remaining))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("已完成全部长期恢复里程碑")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }

@@ -33,7 +33,7 @@ struct AddWellnessEntryView: View {
                             .frame(width: 90)
                         Text("小时").foregroundStyle(.secondary)
                     }
-                    Stepper("精力 (energy)/5", value: $energy, in: 1...5)
+                    Stepper("精力 \(energy)/5", value: $energy, in: 1...5)
                 }
                 Section {
                     Text("只记录你愿意记录的项目，留空即可。")

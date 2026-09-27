@@ -9,7 +9,6 @@ struct SettingsView: View {
     @State private var smokingYears = 0
     @State private var reminderEnabled = false
     @State private var reminderTimes: [ReminderTime] = []
-    @State private var newTrigger = ""
     @State private var showingRestartConfirmation = false
     @State private var showingNotificationDenied = false
     @State private var saved = false
@@ -47,36 +46,6 @@ struct SettingsView: View {
                     }
                 }
                 .disabled(saved)
-            }
-
-            Section("自定义触发标签") {
-                HStack {
-                    TextField("例如：加班、吵架", text: $newTrigger)
-                    Button("添加") {
-                        store.addCustomTrigger(newTrigger)
-                        newTrigger = ""
-                    }
-                    .disabled(newTrigger.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-                if store.data.customTriggers.isEmpty {
-                    Text("记录烟瘾时输入的新场景会自动保存到这里。")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(store.data.customTriggers, id: \.self) { trigger in
-                        HStack {
-                            Text(trigger)
-                            Spacer()
-                            Button {
-                                store.deleteCustomTrigger(trigger)
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
             }
 
             Section("自定义提醒") {
@@ -133,7 +102,7 @@ struct SettingsView: View {
             } header: {
                 Text("戒烟计时")
             } footer: {
-                Text("重新开始只会新增一个戒烟阶段。历史打卡、烟瘾记录和累计少抽数量都会保留。")
+                Text("重新开始只会新增一个戒烟阶段。历史打卡、复吸记录和累计少抽数量都会保留。")
             }
 
             Section("数据导出") {
@@ -154,15 +123,15 @@ struct SettingsView: View {
                 Label("无需账号，不连接服务器", systemImage: "lock.shield.fill")
                 LabeledContent("戒烟阶段", value: "\(store.data.attempts.count) 个")
                 LabeledContent("打卡记录", value: "\(store.data.checkIns.count) 条")
-                LabeledContent("烟瘾记录", value: "\(store.data.cravings.count) 条")
                 LabeledContent("复吸记录", value: "\(store.data.relapses.count) 条")
+                LabeledContent("身体记录", value: "\(store.data.wellnessEntries.count) 条")
             }
 
             Section {
                 HStack {
                     Text("无烟日记")
                     Spacer()
-                    Text("1.2").foregroundStyle(.secondary)
+                    Text("1.3").foregroundStyle(.secondary)
                 }
             }
         }

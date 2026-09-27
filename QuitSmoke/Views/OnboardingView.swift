@@ -45,7 +45,7 @@ struct OnboardingView: View {
                         }
                         .padding(.vertical, 12)
                         Divider()
-                        Stepper("烟龄约 (smokingYears) 年", value: $smokingYears, in: 0...80)
+                        Stepper("烟龄约 \(smokingYears) 年", value: $smokingYears, in: 0...80)
                             .padding(.vertical, 12)
                     }
                     .appCard()

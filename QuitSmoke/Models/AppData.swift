@@ -5,10 +5,8 @@ struct AppData: Codable, Equatable {
     var profile = QuitProfile()
     var attempts: [QuitAttempt] = []
     var checkIns: [DailyCheckIn] = []
-    var cravings: [CravingRecord] = []
     var relapses: [RelapseRecord] = []
     var wellnessEntries: [WellnessEntry] = []
-    var customTriggers: [String] = []
     var reminder = ReminderSettings()
 
     init(
@@ -16,20 +14,16 @@ struct AppData: Codable, Equatable {
         profile: QuitProfile = QuitProfile(),
         attempts: [QuitAttempt] = [],
         checkIns: [DailyCheckIn] = [],
-        cravings: [CravingRecord] = [],
         relapses: [RelapseRecord] = [],
         wellnessEntries: [WellnessEntry] = [],
-        customTriggers: [String] = [],
         reminder: ReminderSettings = ReminderSettings()
     ) {
         self.hasCompletedSetup = hasCompletedSetup
         self.profile = profile
         self.attempts = attempts
         self.checkIns = checkIns
-        self.cravings = cravings
         self.relapses = relapses
         self.wellnessEntries = wellnessEntries
-        self.customTriggers = customTriggers
         self.reminder = reminder
     }
 
@@ -39,10 +33,8 @@ struct AppData: Codable, Equatable {
         profile = try container.decodeIfPresent(QuitProfile.self, forKey: .profile) ?? QuitProfile()
         attempts = try container.decodeIfPresent([QuitAttempt].self, forKey: .attempts) ?? []
         checkIns = try container.decodeIfPresent([DailyCheckIn].self, forKey: .checkIns) ?? []
-        cravings = try container.decodeIfPresent([CravingRecord].self, forKey: .cravings) ?? []
         relapses = try container.decodeIfPresent([RelapseRecord].self, forKey: .relapses) ?? []
         wellnessEntries = try container.decodeIfPresent([WellnessEntry].self, forKey: .wellnessEntries) ?? []
-        customTriggers = try container.decodeIfPresent([String].self, forKey: .customTriggers) ?? []
         reminder = try container.decodeIfPresent(ReminderSettings.self, forKey: .reminder) ?? ReminderSettings()
     }
 
@@ -98,45 +90,6 @@ struct DailyCheckIn: Identifiable, Codable, Equatable {
     var date: Date
     var status: Status
     var cigarettesSmoked: Int
-}
-
-struct CravingRecord: Identifiable, Codable, Equatable {
-    var id = UUID()
-    var date: Date
-    var intensity: Int
-    var trigger: String
-    var resisted: Bool
-    var emotion: String
-    var note: String
-
-    init(
-        id: UUID = UUID(),
-        date: Date = Date(),
-        intensity: Int,
-        trigger: String,
-        resisted: Bool,
-        emotion: String = "",
-        note: String = ""
-    ) {
-        self.id = id
-        self.date = date
-        self.intensity = intensity
-        self.trigger = trigger
-        self.resisted = resisted
-        self.emotion = emotion
-        self.note = note
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
-        date = try container.decodeIfPresent(Date.self, forKey: .date) ?? Date()
-        intensity = try container.decodeIfPresent(Int.self, forKey: .intensity) ?? 3
-        trigger = try container.decodeIfPresent(String.self, forKey: .trigger) ?? "未填写"
-        resisted = try container.decodeIfPresent(Bool.self, forKey: .resisted) ?? false
-        emotion = try container.decodeIfPresent(String.self, forKey: .emotion) ?? ""
-        note = try container.decodeIfPresent(String.self, forKey: .note) ?? ""
-    }
 }
 
 struct RelapseRecord: Identifiable, Codable, Equatable {

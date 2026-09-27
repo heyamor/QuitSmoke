@@ -1,9 +1,7 @@
-import Charts
 import SwiftUI
 
 struct HistoryView: View {
     @EnvironmentObject private var store: AppStore
-    @State private var period: ReviewPeriod = .week
     @State private var showingRelapse = false
     @State private var showingWellness = false
 
@@ -12,41 +10,15 @@ struct HistoryView: View {
         return (0..<7).reversed().compactMap { offset in
             guard let date = calendar.date(byAdding: .day, value: -offset, to: Date()) else { return nil }
             let checkIn = store.data.checkIns.first { calendar.isDate($0.date, inSameDayAs: date) }
-            let cravings = store.data.cravings.filter { calendar.isDate($0.date, inSameDayAs: date) }.count
-            return DaySummary(date: date, checkIn: checkIn, cravings: cravings)
+            return DaySummary(date: date, checkIn: checkIn)
         }
-    }
-
-    private var cravingTrend: [TrendPoint] {
-        let calendar = Calendar.current
-        let count = period == .week ? 7 : 30
-        return (0..<count).reversed().compactMap { offset in
-            guard let date = calendar.date(byAdding: .day, value: -offset, to: Date()) else { return nil }
-            let total = store.data.cravings.filter { calendar.isDate($0.date, inSameDayAs: date) }.count
-            return TrendPoint(date: calendar.startOfDay(for: date), count: total)
-        }
-    }
-
-    private var triggerRanking: [TriggerSummary] {
-        let grouped = Dictionary(grouping: store.data.cravings) { craving in
-            craving.trigger.isEmpty ? "未填写" : craving.trigger
-        }
-        return grouped.map { TriggerSummary(name: $0.key, count: $0.value.count) }
-            .sorted { $0.count > $1.count }
     }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 18) {
                 overview
-                Picker("回顾周期", selection: $period) {
-                    ForEach(ReviewPeriod.allCases) { value in
-                        Text(value.title).tag(value)
-                    }
-                }
-                .pickerStyle(.segmented)
-                trendChart
-                triggerOverview
+                recoverySummary
                 checkInChart
                 relapseSection
                 wellnessSection
@@ -65,75 +37,38 @@ struct HistoryView: View {
         HStack(spacing: 4) {
             StatItem(value: "\(store.data.checkIns.filter { $0.status == .smokeFree }.count)", label: "无烟打卡")
             Divider().frame(height: 42)
-            StatItem(value: "\(store.data.cravings.count)", label: "烟瘾记录")
+            StatItem(value: "\(store.metrics.recoveryPercent)%", label: "健康恢复")
             Divider().frame(height: 42)
-            StatItem(value: "\(store.metrics.resistedRate)%", label: "扛过率")
+            StatItem(value: "\(store.metrics.relapseCount)", label: "复吸次数")
             Divider().frame(height: 42)
             StatItem(value: AppFormatters.duration(store.metrics.longestElapsed), label: "最长纪录")
         }
         .appCard()
     }
 
-    private var trendChart: some View {
+    private var recoverySummary: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("想抽次数趋势").font(.headline)
+                Text("健康恢复进度").font(.headline)
                 Spacer()
-                Text(period == .week ? "最近 7 天" : "最近 30 天")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            if store.data.cravings.isEmpty {
-                Text("记录几次烟瘾后，这里会显示趋势。")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 150, alignment: .center)
-            } else {
-                Chart(cravingTrend) { point in
-                    LineMark(
-                        x: .value("日期", point.date),
-                        y: .value("次数", point.count)
-                    )
-                    .interpolationMethod(.catmullRom)
+                Text("\(store.metrics.recoveryPercent)%")
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(Theme.primary)
-                    AreaMark(
-                        x: .value("日期", point.date),
-                        y: .value("次数", point.count)
-                    )
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(Theme.primary.opacity(0.12))
-                    PointMark(
-                        x: .value("日期", point.date),
-                        y: .value("次数", point.count)
-                    )
-                    .foregroundStyle(Theme.primary)
-                }
-                .chartYScale(domain: 0...max(1, cravingTrend.map(\.count).max() ?? 1))
-                .chartXAxis { AxisMarks(values: .automatic(desiredCount: period == .week ? 7 : 5)) }
-                .chartYAxis { AxisMarks(position: .leading) }
-                .frame(height: 170)
             }
-        }
-        .appCard()
-    }
-
-    private var triggerOverview: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("高频触发场景").font(.headline)
-            if triggerRanking.isEmpty {
-                Text("记录烟瘾后会在这里看到自己的触发规律。")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(triggerRanking.prefix(5)) { item in
-                    HStack(spacing: 10) {
-                        Text(item.name)
-                        Spacer()
-                        Text("\(item.count) 次")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Theme.primary)
+            ProgressView(value: store.metrics.recoveryProgress)
+                .tint(Theme.primary)
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "heart.text.square.fill")
+                    .foregroundStyle(Theme.primary)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("当前阶段：\(store.metrics.currentRecoveryStage.title)")
+                        .font(.subheadline.weight(.semibold))
+                    if let next = store.metrics.nextRecoveryStage {
+                        let remaining = max(0, next.hours * 3_600 - store.metrics.elapsed)
+                        Text("下一里程碑：\(next.title)，还需约 \(AppFormatters.duration(remaining))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    if item.id != triggerRanking.prefix(5).last?.id { Divider() }
                 }
             }
         }
@@ -303,28 +238,8 @@ struct HistoryView: View {
         if let weight = entry.weight { values.append(String(format: "%.1f kg", weight)) }
         if let sleep = entry.sleepHours { values.append(String(format: "睡眠 %.1f h", sleep)) }
         if let energy = entry.energy { values.append("精力 \(energy)/5") }
-        return values.joined(separator: " · ")
+        return values.isEmpty ? "未填写" : values.joined(separator: " · ")
     }
-}
-
-private enum ReviewPeriod: String, CaseIterable, Identifiable {
-    case week
-    case month
-
-    var id: String { rawValue }
-    var title: String { self == .week ? "周" : "月" }
-}
-
-private struct TrendPoint: Identifiable {
-    let date: Date
-    let count: Int
-    var id: Date { date }
-}
-
-private struct TriggerSummary: Identifiable {
-    let name: String
-    let count: Int
-    var id: String { name }
 }
 
 private struct StatItem: View {
@@ -343,7 +258,6 @@ private struct StatItem: View {
 private struct DaySummary: Identifiable {
     let date: Date
     let checkIn: DailyCheckIn?
-    let cravings: Int
     var id: Date { date }
     var weekday: String { date.formatted(.dateTime.weekday(.narrow)) }
     var color: Color {
@@ -351,7 +265,7 @@ private struct DaySummary: Identifiable {
         return checkIn.status == .smokeFree ? Theme.primary : Theme.warm
     }
     var barHeight: CGFloat {
-        guard let checkIn else { return max(8, CGFloat(cravings) * 9) }
+        guard let checkIn else { return 8 }
         return checkIn.status == .smokeFree ? 72 : max(18, 58 - CGFloat(checkIn.cigarettesSmoked) * 3)
     }
     var description: String {

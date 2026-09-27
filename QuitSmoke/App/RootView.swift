@@ -8,8 +8,8 @@ struct RootView: View {
             NavigationStack { DashboardView() }
                 .tabItem { Label("今日", systemImage: "house.fill") }
 
-            NavigationStack { CravingsView() }
-                .tabItem { Label("烟瘾", systemImage: "waveform.path.ecg") }
+            NavigationStack { HealthRecoveryView() }
+                .tabItem { Label("恢复", systemImage: "heart.text.square.fill") }
 
             NavigationStack { HistoryView() }
                 .tabItem { Label("历史", systemImage: "chart.bar.fill") }

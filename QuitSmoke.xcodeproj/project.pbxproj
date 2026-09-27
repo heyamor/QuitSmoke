@@ -19,12 +19,11 @@
 		BB0000000000000000000009 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* OnboardingView.swift */; };
 		BB000000000000000000000A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000A /* DashboardView.swift */; };
 		BB000000000000000000000B /* CheckInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* CheckInSheet.swift */; };
-		BB000000000000000000000C /* CravingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* CravingsView.swift */; };
-		BB000000000000000000000D /* AddCravingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000D /* AddCravingView.swift */; };
 		BB000000000000000000000E /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000E /* HistoryView.swift */; };
 		BB000000000000000000000F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000F /* SettingsView.swift */; };
 		BB0000000000000000000013 /* AddRelapseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000013 /* AddRelapseView.swift */; };
 		BB0000000000000000000014 /* AddWellnessEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000014 /* AddWellnessEntryView.swift */; };
+		BB0000000000000000000015 /* HealthRecoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* HealthRecoveryView.swift */; };
 		BB0000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000010 /* Assets.xcassets */; };
 		BB0000000000000000000011 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000011 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -42,12 +41,11 @@
 		AA0000000000000000000009 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		AA000000000000000000000A /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		AA000000000000000000000B /* CheckInSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInSheet.swift; sourceTree = "<group>"; };
-		AA000000000000000000000C /* CravingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CravingsView.swift; sourceTree = "<group>"; };
-		AA000000000000000000000D /* AddCravingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCravingView.swift; sourceTree = "<group>"; };
 		AA000000000000000000000E /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		AA000000000000000000000F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000013 /* AddRelapseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRelapseView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000014 /* AddWellnessEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddWellnessEntryView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000015 /* HealthRecoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthRecoveryView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0000000000000000000011 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		CC0000000000000000000001 /* QuitSmoke.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuitSmoke.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -136,8 +134,7 @@
 				AA0000000000000000000009 /* OnboardingView.swift */,
 				AA000000000000000000000A /* DashboardView.swift */,
 				AA000000000000000000000B /* CheckInSheet.swift */,
-				AA000000000000000000000C /* CravingsView.swift */,
-				AA000000000000000000000D /* AddCravingView.swift */,
+				AA0000000000000000000015 /* HealthRecoveryView.swift */,
 				AA0000000000000000000013 /* AddRelapseView.swift */,
 				AA0000000000000000000014 /* AddWellnessEntryView.swift */,
 				AA000000000000000000000E /* HistoryView.swift */,
@@ -246,8 +243,7 @@
 				BB0000000000000000000009 /* OnboardingView.swift in Sources */,
 				BB000000000000000000000A /* DashboardView.swift in Sources */,
 				BB000000000000000000000B /* CheckInSheet.swift in Sources */,
-				BB000000000000000000000C /* CravingsView.swift in Sources */,
-				BB000000000000000000000D /* AddCravingView.swift in Sources */,
+				BB0000000000000000000015 /* HealthRecoveryView.swift in Sources */,
 				BB0000000000000000000013 /* AddRelapseView.swift in Sources */,
 				BB0000000000000000000014 /* AddWellnessEntryView.swift in Sources */,
 				BB000000000000000000000E /* HistoryView.swift in Sources */,
@@ -264,7 +260,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "无烟日记";
@@ -272,7 +268,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.personal.quitsmoke;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -290,7 +286,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "无烟日记";
@@ -298,7 +294,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.personal.quitsmoke;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
